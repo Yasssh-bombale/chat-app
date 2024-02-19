@@ -10,3 +10,13 @@ dotenv.config({
 app.use(express.json()); //accepting json payloads;
 app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
+
+// custom errorHandling;
+app.use((error, req, res, next) => {
+  const statusCode = error.statusCode || 500;
+  const message = error.message || "Internal server error";
+  return res.status(statusCode).json({
+    success: false,
+    message,
+  });
+});
