@@ -1,6 +1,5 @@
 import User from "../models/user.model.js";
 import bcryptjs from "bcryptjs";
-import jwt from "jsonwebtoken";
 import generateToken from "../utils/generateToken.js";
 import errorHandler from "../middleware/errorHandler.js";
 
@@ -27,7 +26,7 @@ export const signUp = async (req, res, next) => {
     const user = await User.findOne({ username });
 
     if (user) {
-      return res.status(400).json({ error: "user already exists" });
+      return next(errorHandler(400, "User already exists"));
     }
 
     const hashedPassword = bcryptjs.hashSync(password, 10);
@@ -55,8 +54,37 @@ export const signUp = async (req, res, next) => {
   }
 };
 
-export const signIn = async (req, res) => {
+export const signIn = async (req, res, next) => {
   const { username, password } = req.body;
+  if (!username || !password) {
+    return next(errorHandler(400, "All fields are required"));
+  }
+
+  try {
+    const user = await User.findOne({ username });
+    if (!user) {
+      return next(errorHandler(400, "No user found"));
+    }
+    const isPassMatch = bcryptjs.compareSync(password, user.password);
+    if (!isPassMatch) {
+      return next(errorHandler(400, "Invalid credentials"));
+    }
+
+    generateToken(user._id, res);
+    const { password: pass, ...rest } = user._doc;
+    return res.status(201).json({
+      success: true,
+      message: "User signed in",
+      user: rest,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
-export const signOut = (req, res) => {};
+export const signOut = (req, res) => {
+  return res.cookie("token", "", { maxAge: 0 }).json({
+    success: true,
+    message: "User signout successfully",
+  });
+};
