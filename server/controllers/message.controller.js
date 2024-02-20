@@ -30,3 +30,21 @@ export const sendMsg = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getMsg = async (req, res, next) => {
+  const { id: userToChatId } = req.params;
+  const { id: senderId } = req.user;
+
+  try {
+    const conversation = await Conversation.findOne({
+      participants: { $all: [senderId, userToChatId] },
+    }).populate("messages"); //conversation have messages[] array in which we stored only message id we dont know content of message ; the populate("messages") will return the document of that id which is an message model ;message model contains senderId and recieverId and  main message [content]
+    if (!conversation) {
+      return res.status(200).json([]);
+    }
+    const message = conversation.messages;
+    return res.status(200).json(message);
+  } catch (error) {
+    next(error);
+  }
+};
