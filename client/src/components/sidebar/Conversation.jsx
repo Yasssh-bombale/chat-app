@@ -1,19 +1,22 @@
 import React, { useState } from "react";
+import useConversation from "../../zustand/useConversation";
+import { useDispatch, useSelector } from "react-redux";
+import { setSelectedConversation } from "../../redux/slices/conversation.slice";
 
 const Conversation = ({ conversation, emoji, lastIndex }) => {
-  const [selectedConversation, setSelectedConversation] = useState("");
-
+  const { selectedConversation, setSelectedConversation } = useConversation();
   const isSelected = selectedConversation?._id === conversation._id;
-
+  // const dispatch = useDispatch();
+  // const { selectedConversation } = useSelector((state) => state.conversation);
+  // const isSelected = selectedConversation?._id === conversation._id;
   return (
     <>
       <div
         className={`flex gap-2 px-2 py-1 cursor-pointer hover:bg-sky-500 rounded ${
           isSelected ? "bg-sky-500" : ""
         }`}
-        onClick={() => {
-          setSelectedConversation(conversation);
-        }}
+        onClick={() => setSelectedConversation(conversation)}
+        // onClick={() => setSelectedConversation(conversation)}
       >
         <div className="avatar online">
           <div className="w-12 rounded-full">
